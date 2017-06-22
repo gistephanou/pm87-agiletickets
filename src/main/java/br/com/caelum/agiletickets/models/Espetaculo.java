@@ -13,8 +13,10 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
+import org.joda.time.Weeks;
 
 @Entity
 public class Espetaculo {
@@ -32,8 +34,8 @@ public class Espetaculo {
 
 	@ManyToOne
 	private Estabelecimento estabelecimento;
-	
-	@OneToMany(mappedBy="espetaculo")
+
+	@OneToMany(mappedBy = "espetaculo")
 	private List<Sessao> sessoes = newArrayList();
 
 	public Long getId() {
@@ -75,43 +77,67 @@ public class Espetaculo {
 	public Estabelecimento getEstabelecimento() {
 		return estabelecimento;
 	}
-	
+
 	public List<Sessao> getSessoes() {
 		return sessoes;
 	}
-	
-	public List<Sessao> criaSessoes(LocalDate inicio, LocalDate fim, LocalTime horario, Periodicidade periodicidade) {
-		// ALUNO: Não apague esse metodo. Esse sim será usado no futuro! ;)
-		return null;
+
+	public List<Sessao> criaSessoes(LocalDate inicio, LocalDate fim,
+			LocalTime horario, Periodicidade periodicidade) {
+		if (inicio.isAfter(fim)) {
+			throw new IllegalArgumentException("data inicio > data fim");
+		}
+		if (periodicidade == Periodicidade.DIARIA) {
+			int dias = Days.daysBetween(inicio, fim).getDays();
+
+			for (int i = 0; i <= dias; i++) {
+				Sessao s = new Sessao();
+				s.setEspetaculo(this);
+				s.setInicio(inicio.plusDays(i).toDateTime(horario));
+				sessoes.add(s);
+			}
+		} else {
+			int weeks = Weeks.weeksBetween(inicio, fim).getWeeks();
+
+			for (int i = 0; i <= weeks; i++) {
+				Sessao s = new Sessao();
+				s.setEspetaculo(this);
+				s.setInicio(inicio.plusWeeks(i).toDateTime(horario));
+				sessoes.add(s);
+			}
+			
+		}
+		return sessoes;
 	}
-	
-	public boolean Vagas(int qtd, int min)
-   {
-       // ALUNO: Não apague esse metodo. Esse sim será usado no futuro! ;)
-       int totDisp = 0;
 
-       for (Sessao s : sessoes)
-       {
-           if (s.getIngressosDisponiveis() < min) return false;
-           totDisp += s.getIngressosDisponiveis();
-       }
+	public boolean Vagas(int qtd, int min) {
+		// ALUNO: Não apague esse metodo. Esse sim será usado no futuro! ;)
+		int totDisp = 0;
 
-       if (totDisp >= qtd) return true;
-       else return false;
-   }
+		for (Sessao s : sessoes) {
+			if (s.getIngressosDisponiveis() < min)
+				return false;
+			totDisp += s.getIngressosDisponiveis();
+		}
 
-   public boolean Vagas(int qtd)
-   {
-       // ALUNO: Não apague esse metodo. Esse sim será usado no futuro! ;)
-       int totDisp = 0;
+		if (totDisp >= qtd)
+			return true;
+		else
+			return false;
+	}
 
-       for (Sessao s : sessoes)
-       {
-           totDisp += s.getIngressosDisponiveis();
-       }
+	public boolean Vagas(int qtd) {
+		// ALUNO: Não apague esse metodo. Esse sim será usado no futuro! ;)
+		int totDisp = 0;
 
-       if (totDisp >= qtd) return true;
-       else return false;
-   }
+		for (Sessao s : sessoes) {
+			totDisp += s.getIngressosDisponiveis();
+		}
+
+		if (totDisp >= qtd)
+			return true;
+		else
+			return false;
+	}
 
 }

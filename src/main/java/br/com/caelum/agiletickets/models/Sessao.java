@@ -116,5 +116,5 @@ public class Sessao {
 	public BigDecimal getPreco() {
 		return preco;
 	}
-	
+
 }
